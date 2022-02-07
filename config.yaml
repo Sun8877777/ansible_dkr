@@ -1,0 +1,45 @@
+---
+- name: Preconfig
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install Docker
+      block:
+        - name: Install yum utils
+          yum:
+            name:
+              - yum-utils
+            state: present
+        - name: Remove old version
+          yum:
+            name:
+              - docker
+              - docker-client
+              - docker-client-latest
+              - docker-common
+              - docker-latest
+              - docker-latest-logrotate
+              - docker-logrotate
+              - docker-engine
+            state: absent
+        - name: fix add repo
+          shell: sed -i 's/$releasever/7/g' /etc/yum.repos.d/docker-ce.repo
+          run_once: true
+        - name: add repo for centos 7
+          yum_repository:
+            name: docker-ce
+            description: docker-ce
+            baseurl: https://download.docker.com/linux/centos/docker-ce.repo
+        - name: install docker
+          yum:
+            name:
+              - docker-ce
+              - docker-ce-cli
+              - containerd.io
+            state: present
+            update_cache: yes
+        - name: enable docker services
+          ansible.builtin.systemd:
+            state: started
+            name: docker
+            enabled: yes
