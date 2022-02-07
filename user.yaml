@@ -1,46 +1,24 @@
 ---
 - name: User
-  hosts: demo1
-  # any_errors_fatal: false
-  # vars_files:
-  #   - ./my_vars.yaml
-  # vars_prompt:
-  #   - name: user
-  #     prompt: "input username"
-  #     private: no
+  hosts: demo2
   tasks:
     - name: preconfig block
       block:
-        - name: Create user
-          vars:
-            user: alex2
-          user:
-            name: "{{ user }}"
-            state: present
-          register: error
-        - name: HTOP install
-          vars:
-            user: alex2
-          yum:
-            name: htop
-            update_cache: yes
-          register: error
-        - name: Fail on Failed
-          command: echo "FAILED"
-          register: command_result
-          failed_when: "'FAILED' in command_result.stdout"
+        - name: Sleep
+          command: /usr/bin/sleep 15
+          async: 1000
+          poll: 0
+          register: sleep
+        - debug:
+            var: sleep
+        - name: Echo
+          command: echo "DONE"
       become: true
-      when: ansible_facts['distribution'].lower() == 'centos'
-
-      rescue:
-        - name: Some error print
-          debug:
-            var: error
-      always:
-        - name: Reboot
-          debug:
-            msg: "Rebooooting"
-      # debugger: always
-    #   register: out
-    # - debug:
-    #     var: out
+    - name: checkSleep status
+      async_status:
+        jid: '{{ sleep.ansible_job_id  }}'
+      register: job_result
+      until: job_result.finished
+      retries: 100
+      delay: 1
+      become: true
