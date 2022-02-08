@@ -50,7 +50,7 @@
           register: page
         - name: install docker compose
           get_url:
-            url: "https://github.com/docker/compose/releases/download/{{page.json.tag_name }}/docker-compose-Linux-x86_64"
+            url: "https://github.com/docker/compose/releases/download/{{ page.json.tag_name }}/docker-compose-Linux-x86_64"
             dest: "/usr/local/bin/docker-compose"
             mode: 0755
     - name: Завершение установки
