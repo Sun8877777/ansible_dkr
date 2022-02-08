@@ -1,0 +1,4 @@
+exclude_paths:
+  - .github/
+skip_list:
+  - new-line-at-end-of-file

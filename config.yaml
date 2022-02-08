@@ -1,7 +1,7 @@
 ---
 - name: Preconfig
   hosts: all
-  become: yes
+  become: true
   tasks:
     - name: Install Docker
       block:
@@ -22,9 +22,6 @@
               - docker-logrotate
               - docker-engine
             state: absent
-        - name: fix add repo
-          shell: sed -i 's/$releasever/7/g' /etc/yum.repos.d/docker-ce.repo
-          run_once: true
         - name: add repo for centos 7
           yum_repository:
             name: docker-ce
@@ -37,13 +34,13 @@
               - docker-ce-cli
               - containerd.io
             state: present
-            update_cache: yes
+            update_cache: true
         - name: enable docker services
           ansible.builtin.systemd:
             state: started
             name: docker
-            enabled: yes
-      become: yes
+            enabled: true
+      become: true
     - name: docker compose install
       block:
         - name: check compose version
@@ -53,7 +50,7 @@
           register: page
         - name: install docker compose
           get_url:
-            url: "https://github.com/docker/compose/releases/download/{{ page.json.tag_name }}/docker-compose-Linux-x86_64"
+            url: "https://github.com/docker/compose/releases/download/{{page.json.tag_name }}/docker-compose-Linux-x86_64"
             dest: "/usr/local/bin/docker-compose"
             mode: 0755
     - name: Завершение установки
@@ -66,8 +63,7 @@
           ansible.builtin.user:
             name: "{{ ansible_user }}"
             groups: docker
-            append: yes
+            append: true
         - name: Reboot server
           reboot:
             reboot_timeout: 3600
-
