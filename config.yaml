@@ -1,15 +1,10 @@
 ---
 - name: Preconfig
-  hosts: all
+  hosts: cluster
   become: true
   tasks:
     - name: Install Docker
       block:
-        - name: Install yum utils
-          yum:
-            name:
-              - yum-utils
-            state: present
         - name: Remove old version
           yum:
             name:
@@ -22,19 +17,30 @@
               - docker-logrotate
               - docker-engine
             state: absent
-        - name: add repo for centos 7
+        - name: Add Docker-CE stable repo
           yum_repository:
-            name: docker-ce
-            description: docker-ce
-            baseurl: https://download.docker.com/linux/centos/docker-ce.repo
-        - name: install docker
+            name: docker-ce-stable
+            description: Docker CE Stable Repo
+            baseurl: https://download.docker.com/linux/centos/7/$basearch/stable
+            gpgkey: https://download.docker.com/linux/centos/gpg
+            gpgcheck: yes
+        - name: Install yum utils
           yum:
             name:
+              - yum-utils
+              - device-mapper-persistent-data
+              - lvm2
+            state: present
+            # update_cache: yes
+        - name: install docker
+          yum:
+            name: "{{ packages }}"
+            update_cache: yes
+          vars:
+            packages:
               - docker-ce
               - docker-ce-cli
               - containerd.io
-            state: present
-            update_cache: true
         - name: enable docker services
           ansible.builtin.systemd:
             state: started
